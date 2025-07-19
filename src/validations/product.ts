@@ -1,10 +1,17 @@
 import Joi from "joi";
 
 export const getProductsSchema = Joi.object({
-  sortBy: Joi.string().valid("name", "price"),
+  sortBy: Joi.string().valid("name", "price", "stocks", "createdAt"),
   orderBy: Joi.string().valid("asc", "desc"),
   minPrice: Joi.number(),
   maxPrice: Joi.number(),
+  limit: Joi.number().integer().min(2).max(10),
+  page: Joi.number().integer().min(1),
+});
+
+export const getDeletedProductsSchema = Joi.object({
+  sortBy: Joi.string().valid("name", "stocks", "deletedAt"),
+  orderBy: Joi.string().valid("asc", "desc"),
   limit: Joi.number().integer().min(2).max(10),
   page: Joi.number().integer().min(1),
 });

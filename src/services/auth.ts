@@ -43,7 +43,8 @@ export async function login(email: string, password: string) {
   if (!isMatch) throw new Error("Wrong password");
 
   const token = signToken({ id: user.id, email: user.email, role: user.role });
-  return { token };
+  const session = { name: user.name, email: user.email, role: user.role };
+  return { session, token };
 }
 
 export async function updateUser(id: number, name: string, picture: string) {

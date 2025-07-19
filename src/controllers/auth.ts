@@ -45,12 +45,18 @@ export async function handleLogin(req: Request, res: Response) {
     }
 
     const { email, password } = req.body;
-    const { token } = await login(email, password);
+    const result = await login(email, password);
+    res.cookie("token", result.token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 1000 * 60 * 60 * 24,
+    });
     res.status(200).json({
       statusCode: 200,
       status: "success",
       message: "Login successful",
-      token,
+      session: result.session,
     });
   } catch (err: any) {
     res
@@ -70,13 +76,11 @@ export async function handleUpdateUser(req: Request, res: Response) {
     }
 
     if (!req.file) {
-      res
-        .status(400)
-        .json({
-          statusCode: 400,
-          status: "error",
-          message: "Image is required",
-        });
+      res.status(400).json({
+        statusCode: 400,
+        status: "error",
+        message: "Image is required",
+      });
       return;
     }
 

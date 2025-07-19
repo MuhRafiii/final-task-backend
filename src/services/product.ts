@@ -22,18 +22,62 @@ export async function getProducts(
     take: Number(limit),
     skip: offset,
     select: {
+      id: true,
       name: true,
       description: true,
       price: true,
       stocks: true,
       picture: true,
+      createdAt: true,
+      updatedAt: true,
     },
   });
 
   if (products.length === 0) throw new Error("Products not found");
 
+  const fullProducts = products.map((product) => ({
+    ...product,
+    picture: `http://localhost:3000/uploads/${product.picture}`, // ⬅️ ubah path gambar
+  }));
+
   const total = await prisma.product.count({ where: filters });
-  return { products, total };
+  return { fullProducts, total };
+}
+
+export async function getDeletedProducts(
+  sortBy: string,
+  orderBy: string,
+  limit: string,
+  page: string
+) {
+  const offset = (Number(page) - 1) * Number(limit);
+  const products = await prisma.product.findMany({
+    where: { status: false },
+    orderBy: {
+      [sortBy]: orderBy,
+    },
+    take: Number(limit),
+    skip: offset,
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      price: true,
+      stocks: true,
+      picture: true,
+      deletedAt: true,
+    },
+  });
+
+  if (products.length === 0) throw new Error("Products not found");
+
+  const deletedProducts = products.map((product) => ({
+    ...product,
+    picture: `http://localhost:3000/uploads/${product.picture}`, // ⬅️ ubah path gambar
+  }));
+
+  const total = await prisma.product.count({ where: { status: false } });
+  return { deletedProducts, total };
 }
 
 export async function createProduct(

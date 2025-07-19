@@ -14,15 +14,14 @@ export async function getAllOrders(
   page: string
 ) {
   const filters: any = {};
-  if (minTotal || maxTotal) {
-    if (minTotal) filters.total = { gte: parseFloat(minTotal) };
-    if (maxTotal)
-      filters.total = { ...(filters.total || {}), lte: parseFloat(maxTotal) };
-  } else if (startDate || endDate) {
-    if (startDate) filters.createdAt = { gte: startDate };
-    if (endDate)
-      filters.createdAt = { ...(filters.createdAt || {}), lte: endDate };
-  }
+
+  if (minTotal) filters.total = { gte: parseFloat(minTotal) };
+  if (maxTotal)
+    filters.total = { ...(filters.total || {}), lte: parseFloat(maxTotal) };
+
+  if (startDate) filters.createdAt = { gte: startDate };
+  if (endDate)
+    filters.createdAt = { ...(filters.createdAt || {}), lte: endDate };
 
   const offset = (Number(page) - 1) * Number(limit);
   const orders = await prisma.order.findMany({
@@ -32,6 +31,13 @@ export async function getAllOrders(
     },
     take: Number(limit),
     skip: offset,
+    select: {
+      id: true,
+      email: true,
+      cart: true,
+      total: true,
+      createdAt: true,
+    },
   });
 
   if (orders.length === 0) {
@@ -42,41 +48,10 @@ export async function getAllOrders(
   return { orders, total };
 }
 
-export async function getOrdersByUser(
-  minCart: string,
-  maxCart: string,
-  minTotal: string,
-  maxTotal: string,
-  limit: string,
-  page: string
-) {
-  const filters: any = {};
-  if (minCart || maxCart) {
-    if (minCart)
-      filters.cart = {
-        gte: parseInt(minCart),
-      };
-    if (maxCart)
-      filters.cart = {
-        ...(filters.cart || {}),
-        lte: parseInt(maxCart),
-      };
-  } else if (minTotal || maxTotal) {
-    if (minTotal)
-      filters.total = {
-        gte: parseFloat(minTotal),
-      };
-    if (maxTotal)
-      filters.total = {
-        ...(filters.total || {}),
-        lte: parseFloat(maxTotal),
-      };
-  }
-
+export async function getOrdersByUser(limit: string, page: string) {
   const offset = (Number(page) - 1) * Number(limit);
   const orders = await prisma.order.groupBy({
     by: ["email"],
-    where: filters,
     orderBy: {
       email: "asc",
     },
@@ -98,7 +73,14 @@ export async function getOrdersByUser(
     };
   });
 
-  const total = await prisma.order.count({ where: filters });
+  const totalGroup = await prisma.order.groupBy({
+    by: ["email"],
+    _count: {
+      cart: true,
+    },
+  });
+
+  const total = totalGroup.length;
   return { result, total };
 }
 
@@ -155,7 +137,7 @@ export async function createOrder(email: string, cart: any) {
 
   for (const item of cart) {
     const product = await prisma.product.findUnique({
-      where: { name: item.productName },
+      where: { name: item.name },
     });
 
     if (!product) throw new Error(`Product ${item.productName} not found`);

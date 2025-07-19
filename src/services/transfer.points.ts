@@ -1,5 +1,15 @@
 import { prisma } from "../prisma/client";
 
+export async function getPoint(email: string) {
+  const userPoint = await prisma.point.findUnique({ where: { email } });
+  if (!userPoint) {
+    throw new Error("User not found");
+  }
+
+  const point = userPoint.points;
+  return point;
+}
+
 export async function transferPoints(
   senderEmail: string,
   receiverEmail: string,

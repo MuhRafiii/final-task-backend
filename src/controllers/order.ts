@@ -60,23 +60,9 @@ export async function handleGetOrdersByUser(req: Request, res: Response) {
       return;
     }
 
-    const {
-      minCart = 0,
-      maxCart,
-      minTotal = 0,
-      maxTotal,
-      limit = 10,
-      page = 1,
-    } = req.query;
+    const { limit = 10, page = 1 } = req.query;
 
-    const orders = await getOrdersByUser(
-      minCart as string,
-      maxCart as string,
-      minTotal as string,
-      maxTotal as string,
-      limit as string,
-      page as string
-    );
+    const orders = await getOrdersByUser(limit as string, page as string);
     res.status(200).json({ statusCode: 200, status: "success", orders });
   } catch (err: any) {
     res

@@ -2,12 +2,14 @@ import { Request, Response } from "express";
 import {
   createProduct,
   deleteProduct,
+  getDeletedProducts,
   getProducts,
   restoreProduct,
   updateProduct,
 } from "../services/product";
 import {
   createProductSchema,
+  getDeletedProductsSchema,
   getProductsSchema,
   updateProductSchema,
 } from "../validations/product";
@@ -35,6 +37,36 @@ export async function handleGetProducts(req: Request, res: Response) {
       orderBy as string,
       minPrice as string,
       maxPrice as string,
+      limit as string,
+      page as string
+    );
+    res.status(200).json({ statusCode: 200, status: "success", products });
+  } catch (err: any) {
+    res
+      .status(400)
+      .json({ statusCode: 400, status: "error", message: err.message });
+  }
+}
+
+export async function handleGetDeletedProducts(req: Request, res: Response) {
+  try {
+    const { error } = getDeletedProductsSchema.validate(req.query);
+    if (error) {
+      res
+        .status(400)
+        .json({ statusCode: 400, status: "error", error: error.message });
+      return;
+    }
+
+    const {
+      sortBy = "name",
+      orderBy = "asc",
+      limit = 10,
+      page = 1,
+    } = req.query;
+    const products = await getDeletedProducts(
+      sortBy as string,
+      orderBy as string,
       limit as string,
       page as string
     );

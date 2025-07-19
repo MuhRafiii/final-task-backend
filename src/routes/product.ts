@@ -2,6 +2,7 @@ import express from "express";
 import {
   handleCreateProduct,
   handleDeleteProduct,
+  handleGetDeletedProducts,
   handleGetProducts,
   handleRestoreProduct,
   handleUpdateProduct,
@@ -13,6 +14,7 @@ import { upload } from "../utils/multer";
 const router = express.Router();
 
 router.get("/", authenticate, handleGetProducts);
+router.get("/deleted", authenticate, isAdmin, handleGetDeletedProducts);
 router.post(
   "/add",
   authenticate,

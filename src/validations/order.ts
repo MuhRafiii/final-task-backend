@@ -35,7 +35,7 @@ export const createOrderSchema = Joi.object({
   cart: Joi.array()
     .items(
       Joi.object({
-        productName: Joi.string().required(),
+        name: Joi.string().required(),
         quantity: Joi.number().required(),
       })
     )
